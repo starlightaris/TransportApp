@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { ShiftType, AttendanceStatus } from '../types/attendance';
 import { fetchPassengerAttendance, updateShiftStatus } from '../services/attendanceService';
 
@@ -10,14 +10,22 @@ interface PassengerAttendanceProps {
 export const PassengerAttendance: React.FC<PassengerAttendanceProps> = ({ passengerId }) => {
   const [morningStatus, setMorningStatus] = useState<AttendanceStatus>('pending');
   const [eveningStatus, setEveningStatus] = useState<AttendanceStatus>('pending');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     const loadData = async () => {
-      const data = await fetchPassengerAttendance(passengerId, today);
-      setMorningStatus(data.morningShift);
-      setEveningStatus(data.eveningShift);
+      setIsLoading(true);
+      try {
+        const data = await fetchPassengerAttendance(passengerId, today);
+        setMorningStatus(data.morningShift);
+        setEveningStatus(data.eveningShift);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadData();
   }, [passengerId, today]);
@@ -36,8 +44,15 @@ export const PassengerAttendance: React.FC<PassengerAttendanceProps> = ({ passen
       <View style={styles.container}>
         <Text style={styles.headerTitle}>Attendance Dashboard</Text>
         
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Morning Shift</Text>
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#12A14B" />
+            <Text style={styles.loadingText}>Loading attendance data...</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Morning Shift</Text>
           <View style={styles.buttonGroup}>
             <TouchableOpacity 
               style={[styles.button, morningStatus === 'present' && styles.buttonActivePresent]}
@@ -70,8 +85,9 @@ export const PassengerAttendance: React.FC<PassengerAttendanceProps> = ({ passen
               <Text style={[styles.buttonText, eveningStatus === 'absent' && styles.buttonTextActive]}>Absent</Text>
             </TouchableOpacity>
           </View>
-        </View>
-
+            </View>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -104,6 +120,16 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f1f5f9',
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    color: '#64748b',
+    fontSize: 16,
   },
   cardTitle: {
     fontSize: 18,
