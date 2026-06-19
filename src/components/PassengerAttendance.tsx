@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { ShiftType, AttendanceStatus } from '../types/attendance';
+import { fetchPassengerAttendance, updateShiftStatus } from '../services/attendanceService';
 
 interface PassengerAttendanceProps {
   passengerId: string;
@@ -10,9 +11,24 @@ export const PassengerAttendance: React.FC<PassengerAttendanceProps> = ({ passen
   const [morningStatus, setMorningStatus] = useState<AttendanceStatus>('pending');
   const [eveningStatus, setEveningStatus] = useState<AttendanceStatus>('pending');
 
-  const handleToggle = (shift: ShiftType, status: AttendanceStatus) => {
+  const today = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchPassengerAttendance(passengerId, today);
+      setMorningStatus(data.morningShift);
+      setEveningStatus(data.eveningShift);
+    };
+    loadData();
+  }, [passengerId, today]);
+
+  const handleToggle = async (shift: ShiftType, status: AttendanceStatus) => {
+    // Optimistic update
     if (shift === 'morning') setMorningStatus(status);
     if (shift === 'evening') setEveningStatus(status);
+    
+    // Firestore update
+    await updateShiftStatus(passengerId, today, shift, status);
   };
 
   return (
