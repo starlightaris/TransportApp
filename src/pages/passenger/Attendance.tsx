@@ -11,6 +11,11 @@ export const Attendance: React.FC = () => {
           <Text style={styles.cardTitle}>Morning Shift</Text>
           {/* Toggles */}
         </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Evening Shift</Text>
+          {/* Toggles */}
+        </View>
         
         {/* Layout containers go here */}
       </View>
