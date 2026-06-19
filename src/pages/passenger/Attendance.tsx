@@ -3,6 +3,12 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicat
 import { ShiftType, AttendanceStatus } from '../../types/attendance';
 import { fetchAttendance, updateAttendance } from '../../services/attendanceService';
 
+/**
+ * Attendance Component
+ * 
+ * Provides a mobile-first UI for passengers to mark their attendance (present/absent)
+ * for morning and evening shifts. Connects to the attendanceService for data persistence.
+ */
 export const Attendance: React.FC = () => {
   const passengerId = 'mock-passenger-1';
   const today = new Date().toISOString().split('T')[0];
@@ -78,8 +84,6 @@ export const Attendance: React.FC = () => {
             </View>
           </>
         )}
-        
-        {/* Layout containers go here */}
       </View>
     </SafeAreaView>
   );
