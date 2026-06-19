@@ -1,10 +1,9 @@
 export type ShiftType = 'morning' | 'evening';
-
 export type AttendanceStatus = 'present' | 'absent' | 'pending';
 
-export interface PassengerAttendance {
+export interface PassengerAttendanceData {
   passengerId: string;
-  date: string; // YYYY-MM-DD
+  date: string;
   morningShift: AttendanceStatus;
   eveningShift: AttendanceStatus;
   updatedAt?: number;
