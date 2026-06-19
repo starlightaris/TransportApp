@@ -1,0 +1,30 @@
+.attendance-dashboard {
+  padding: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.attendance-dashboard h2 {
+  color: #1e293b; /* dark slate */
+  font-size: 20px;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.shift-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.shift-card h3 {
+  color: #334155; /* dark slate label */
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
