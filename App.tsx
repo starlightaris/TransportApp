@@ -1,24 +1,14 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import EditLocationScreen from './src/pages/passenger/EditLocationScreen';
-import ProfileScreen from './src/pages/passenger/ProfileScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider }    from 'react-native-safe-area-context';
+import RootNavigator           from '@navigation/RootNavigator';
+import React from 'react';
 
 export default function App() {
-  /*return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );*/
-  return (<ProfileScreen />
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
