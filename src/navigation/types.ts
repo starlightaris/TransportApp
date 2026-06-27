@@ -8,7 +8,6 @@ export type AuthStackParams = {
     email: string;
     password: string;
     phone: string;
-    licenseNumber: string;
   };
   PassengerTabs: undefined;
   DriverTabs: undefined;
@@ -34,11 +33,11 @@ export type RootStackParams = {
 };
 
 export type SettingsStackParams = {
-  SettingsHome:              undefined;
-  EditProfile:               undefined;
-  EditLocations:             undefined;
-  VehicleDetails:            undefined;
-  ShiftTimes:                undefined;
-  NotificationPreferences:   undefined;
-  TripHistory:               undefined;
+  SettingsHome:            undefined;
+  EditProfile:             undefined;
+  EditLocations:           undefined;
+  VehicleDetails:          undefined;
+  ShiftTimes:              undefined;
+  NotificationPreferences: undefined;
+  TripHistory:             undefined;
 };

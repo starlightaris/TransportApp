@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { AuthStackParams } from '../../navigation/types';
+import type { AuthStackParams } from '@navigation/types';
 import { isValidEmail, isValidMobile, isStrongPassword, passwordStrengthMessage } from '../../utils/validation';
 
 type NavProp = NativeStackNavigationProp<AuthStackParams, 'DriverSignUpDetails'>;
@@ -12,7 +12,6 @@ export default function DriverSignUpDetailsScreen() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [licenseNumber, setLicenseNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +20,6 @@ export default function DriverSignUpDetailsScreen() {
     if (!name.trim()) return Alert.alert('Oops', 'Please type your name');
     if (!isValidMobile(phone)) return Alert.alert('Oops', 'Please type a valid mobile number');
     if (!isValidEmail(email)) return Alert.alert('Oops', 'Please type a valid email');
-    if (!licenseNumber.trim()) return Alert.alert('Oops', 'Please enter your license number');
     if (!isStrongPassword(password)) return Alert.alert('Oops', passwordStrengthMessage(password));
     if (password !== confirmPassword) return Alert.alert('Oops', 'Passwords do not match');
 
@@ -31,7 +29,6 @@ export default function DriverSignUpDetailsScreen() {
       email: email.trim(),
       password,
       phone: phone.trim(),
-      licenseNumber: licenseNumber.trim(),
     });
   };
 
@@ -67,14 +64,6 @@ export default function DriverSignUpDetailsScreen() {
         autoCapitalize="none"
       />
 
-      <Text style={styles.label}>License Number</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="e.g. B1234567"
-        value={licenseNumber}
-        onChangeText={setLicenseNumber}
-        autoCapitalize="characters"
-      />
 
       <Text style={styles.label}>Password</Text>
       <TextInput

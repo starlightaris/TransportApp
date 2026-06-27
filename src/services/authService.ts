@@ -4,7 +4,7 @@ import {
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from './firebaseConfig';
+import { auth, db } from '@services/firebaseConfig';
 
 type Role = 'driver' | 'passenger';
 
@@ -24,7 +24,6 @@ export async function registerUser(
     name: string;
     mobile: string;
     role: Role;
-    licenseNumber?: string;
   }
 ) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -36,7 +35,6 @@ export async function registerUser(
     email,
     mobile: profile.mobile,
     role: profile.role,
-    licenseNumber: profile.licenseNumber ?? null,
     createdAt: serverTimestamp(),
   });
 
@@ -49,7 +47,6 @@ export async function saveVehicleProfile(
     vehicleNumber: string;
     nickname: string;
     routeTags: string[];
-    contactNumber: string;
     whatsappLink?: string;
   }
 ) {

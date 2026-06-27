@@ -3,9 +3,9 @@ import { Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import type { AuthStackParams } from '../../navigation/types';
-import { registerUser, saveVehicleProfile } from '../../services/authService';
-import { isValidVehicleNumber, isValidMobile } from '../../utils/validation';
+import type { AuthStackParams } from '@navigation/types';
+import { saveVehicleProfile } from '@services/authService';
+import { isValidVehicleNumber } from '../../utils/validation';
 
 type NavProp = NativeStackNavigationProp<AuthStackParams, 'DriverSignUpBus'>;
 type RoutePropType = RouteProp<AuthStackParams, 'DriverSignUpBus'>;
@@ -15,19 +15,16 @@ export default function DriverSignUpBusScreen() {
   const route = useRoute<RoutePropType>();
 
   // These came from Step 1
-  const { name, email, password, phone, licenseNumber } = route.params;
-
+  const { name, email, password, phone } = route.params;
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [nickname, setNickname] = useState('');
   const [routeTags, setRouteTags] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
   const [whatsappLink, setWhatsappLink] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleFinish = async () => {
     if (!isValidVehicleNumber(vehicleNumber)) return Alert.alert('Oops', 'Please type a valid vehicle number');
     if (!nickname.trim()) return Alert.alert('Oops', 'Please give your vehicle a nickname');
-    if (!isValidMobile(contactNumber)) return Alert.alert('Oops', 'Please type a valid contact number');
 
     const tags = routeTags
       .split(',')
@@ -42,7 +39,6 @@ export default function DriverSignUpBusScreen() {
         name,
         mobile: phone,
         role: 'driver',
-        licenseNumber,
       });
 
       // 2. Save vehicle profile linked to same uid
@@ -50,7 +46,6 @@ export default function DriverSignUpBusScreen() {
         vehicleNumber: vehicleNumber.trim().toUpperCase(),
         nickname: nickname.trim(),
         routeTags: tags,
-        contactNumber: contactNumber.trim(),
         whatsappLink: whatsappLink.trim() || undefined,
       });
 
@@ -95,15 +90,6 @@ export default function DriverSignUpBusScreen() {
         placeholder="e.g. Negombo, Katunayake"
         value={routeTags}
         onChangeText={setRouteTags}
-      />
-
-      <Text style={styles.label}>Contact Number</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="e.g. 0771234567"
-        value={contactNumber}
-        onChangeText={setContactNumber}
-        keyboardType="phone-pad"
       />
 
       <Text style={styles.label}>WhatsApp Group Link (optional)</Text>

@@ -4,20 +4,20 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Auth screens
-import Login               from '../pages/auth/Login';
-import RoleSelect          from '../pages/auth/RoleSelect';
-import PassengerSignUp     from '../pages/auth/PassengerSignUp';
-import DriverSignUpDetails from '../pages/auth/DriverSignUpDetails';
-import DriverSignUpBus     from '../pages/auth/DriverSignUpBus';
+import Login               from '@pages/auth/Login';
+import RoleSelect          from '@pages/auth/RoleSelect';
+import PassengerSignUp     from '@pages/auth/PassengerSignUp';
+import DriverSignUpDetails from '@pages/auth/DriverSignUpDetails';
+import DriverSignUpBus     from '@pages/auth/DriverSignUpBus';
 
 // Tab navigators
-import DriverTabs    from './DriverTabs';
-import PassengerTabs from './PassengerTabs';
+import DriverTabs          from '@navigation/DriverTabs';
+import PassengerTabs       from '@navigation/PassengerTabs';
 
 // Full screen
-import ActiveTrip from '../pages/driver/ActiveTrip';
+import ActiveTrip          from '@pages/driver/ActiveTrip';
 
-import type { AuthStackParams, RootStackParams } from './types';
+import type { AuthStackParams, RootStackParams } from '@navigation/types';
 
 const Auth = createNativeStackNavigator<AuthStackParams>();
 const Root = createNativeStackNavigator<RootStackParams>();
