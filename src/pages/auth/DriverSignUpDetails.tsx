@@ -12,12 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AuthStackParams } from '@navigation/types';
-import {
-  isValidEmail,
-  isValidMobile,
-  isStrongPassword,
-  passwordStrengthMessage,
-} from '../../utils/validation';
+import { isValidEmail, isValidMobile, isStrongPassword, passwordStrengthMessage } from '../../utils/validation';
 
 type NavProp = NativeStackNavigationProp<AuthStackParams, 'DriverSignUpDetails'>;
 
@@ -79,16 +74,16 @@ export default function DriverSignUpDetailsScreen() {
             keyboardType="phone-pad"
           />
 
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. kamal@email.com"
-            placeholderTextColor="#4A5568"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+      <Text style={styles.label}>Email</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="e.g. kamal@email.com"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+
 
           <Text style={styles.label}>Password</Text>
           <TextInput

@@ -6,6 +6,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 
 import Login               from '@pages/auth/Login';
+import RoleSelect          from '@pages/auth/RoleSelect';
 import PassengerSignUp     from '@pages/auth/PassengerSignUp';
 import DriverSignUpDetails from '@pages/auth/DriverSignUpDetails';
 import DriverSignUpBus     from '@pages/auth/DriverSignUpBus';

@@ -20,11 +20,10 @@ export type AuthStackParams = {
   PassengerSignUp:     undefined;
   DriverSignUpDetails: undefined;
   DriverSignUpBus: {
-    name:          string;
-    email:         string;
-    password:      string;
-    phone:         string;
-    licenseNumber: string;
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
   };
   PassengerTabs: undefined;
   DriverTabs:    undefined;

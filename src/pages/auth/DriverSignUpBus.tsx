@@ -13,7 +13,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { AuthStackParams } from '@navigation/types';
-import { registerUser, saveVehicleProfile } from '@services/authService';
+import { saveVehicleProfile } from '@services/authService';
 import { isValidVehicleNumber } from '../../utils/validation';
 
 type NavProp = NativeStackNavigationProp<AuthStackParams, 'DriverSignUpBus'>;
@@ -22,8 +22,9 @@ type RoutePropType = RouteProp<AuthStackParams, 'DriverSignUpBus'>;
 export default function DriverSignUpBusScreen() {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RoutePropType>();
-  const { name, email, password, phone } = route.params;
 
+  // These came from Step 1
+  const { name, email, password, phone } = route.params;
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [nickname, setNickname] = useState('');
   const [routeTags, setRouteTags] = useState('');
@@ -31,10 +32,8 @@ export default function DriverSignUpBusScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleFinish = async () => {
-    if (!isValidVehicleNumber(vehicleNumber))
-      return Alert.alert('Oops', 'Please type a valid vehicle number');
-    if (!nickname.trim())
-      return Alert.alert('Oops', 'Please give your vehicle a nickname');
+    if (!isValidVehicleNumber(vehicleNumber)) return Alert.alert('Oops', 'Please type a valid vehicle number');
+    if (!nickname.trim()) return Alert.alert('Oops', 'Please give your vehicle a nickname');
 
     const tags = routeTags
       .split(',')
@@ -102,14 +101,13 @@ export default function DriverSignUpBusScreen() {
             onChangeText={setNickname}
           />
 
-          <Text style={styles.label}>Route Tags (separate with commas)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. Negombo, Katunayake"
-            placeholderTextColor="#4A5568"
-            value={routeTags}
-            onChangeText={setRouteTags}
-          />
+      <Text style={styles.label}>Route Tags (separate with commas)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="e.g. Negombo, Katunayake"
+        value={routeTags}
+        onChangeText={setRouteTags}
+      />
 
           <Text style={styles.label}>WhatsApp Group Link (optional)</Text>
           <TextInput
