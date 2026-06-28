@@ -1,15 +1,19 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView, StatusBar, Platform,} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDriverRoute } from '@hooks/useDriverRoute';
 import { Colors, Radius, Spacing } from '@styles/tokens';
+import type { RootStackParams } from '@navigation/types';
 import ShiftBadge from '@components/driver/route/ShiftBadge';
 import RouteMap from '@components/driver/route/RouteMap';
 import StopRow from '@components/driver/route/StopRow';
 import { EmptyRoute, ErrorState } from '@components/driver/route/EmptyRoute';
 
+type RouteNavProp = NativeStackNavigationProp<RootStackParams, 'DriverTabs'>;
+
 export default function RouteScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<RouteNavProp>();
   const { stops, allMembers, activeShift, communityId, loading, error } = useDriverRoute();
 
   if (loading) {
@@ -33,8 +37,14 @@ export default function RouteScreen() {
   const pendingCount   = stops.filter((s) => s.attendanceStatus === 'unmarked').length;
   const absentMembers  = allMembers.filter((m) => m.attendanceStatus === 'absent');
 
-  const handleStartTrip = () =>
-    navigation.navigate('ActiveTrip', { stops, shift: activeShift, communityId });
+  const handleStartTrip = () => {
+    if (!communityId || !activeShift) return;
+    navigation.navigate('ActiveTrip', {
+      stops,
+      shift: activeShift,
+      communityId,
+    });
+  };
 
   return (
     <SafeAreaView style={styles.root}>
@@ -100,7 +110,11 @@ export default function RouteScreen() {
       {/* Start Trip — sticky bottom bar */}
       {stops.length > 0 && (
         <View style={styles.fabBar}>
-          <TouchableOpacity style={styles.fab} onPress={handleStartTrip} activeOpacity={0.88}>
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={handleStartTrip}
+            activeOpacity={0.88}
+          >
             <Text style={styles.fabText}>Start Trip  →</Text>
           </TouchableOpacity>
         </View>
@@ -109,7 +123,7 @@ export default function RouteScreen() {
   );
 }
 
-// Inline stat box (too small to extract) 
+// ─── Stat box ─────────────────────────────────────────────────────────────────
 
 function Stat({
   label,
@@ -131,17 +145,17 @@ function Stat({
 }
 
 const statStyles = StyleSheet.create({
-  box:     { alignItems: 'center' },
+  box:      { alignItems: 'center' },
   bordered: { paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: Colors.border },
-  value:   { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, lineHeight: 24 },
-  label:   { fontSize: 10, color: Colors.textSecondary, fontWeight: '500',
-             textTransform: 'uppercase', letterSpacing: 0.5 },
+  value:    { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, lineHeight: 24 },
+  label:    { fontSize: 10, color: Colors.textSecondary, fontWeight: '500',
+              textTransform: 'uppercase', letterSpacing: 0.5 },
 });
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root:    { flex: 1, backgroundColor: Colors.bg },
+  root:     { flex: 1, backgroundColor: Colors.bg },
   centered: { flex: 1, backgroundColor: Colors.bg, alignItems: 'center',
               justifyContent: 'center', padding: Spacing.xxl },
   loadingText: { marginTop: 12, fontSize: 14, color: Colors.textSecondary },
@@ -177,12 +191,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: Spacing.lg,
+    fontSize: 11, fontWeight: '700', color: Colors.textSecondary,
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: Spacing.lg,
   },
 
   divider:      { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 16 },

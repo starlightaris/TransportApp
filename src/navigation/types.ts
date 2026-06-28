@@ -1,5 +1,7 @@
+import type { RouteStop, Shift } from '@hooks/useDriverRoute';
+
 export type AuthStackParams = {
-Login: undefined;
+  Login: undefined;
   PassengerSignUp: undefined;
   DriverSignUpDetails: undefined;
   DriverSignUpBus: {
@@ -29,15 +31,19 @@ export type PassengerTabParams = {
 export type RootStackParams = {
   DriverTabs:    undefined;
   PassengerTabs: undefined;
-  ActiveTrip:    undefined;
+  ActiveTrip: {
+    stops: RouteStop[];
+    shift: Shift;
+    communityId: string;
+  };
 };
 
 export type SettingsStackParams = {
-  SettingsHome:              undefined;
-  EditProfile:               undefined;
-  EditLocations:             undefined;
-  VehicleDetails:            undefined;
-  ShiftTimes:                undefined;
-  NotificationPreferences:   undefined;
-  TripHistory:               undefined;
+  SettingsHome:            undefined;
+  EditProfile:             undefined;
+  EditLocations:           undefined;
+  VehicleDetails:          undefined;
+  ShiftTimes:              undefined;
+  NotificationPreferences: undefined;
+  TripHistory:             undefined;
 };

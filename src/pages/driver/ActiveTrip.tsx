@@ -10,9 +10,12 @@ import {
   StatusBar,
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Constants from 'expo-constants';
 import { useActiveTrip } from '@hooks/useActiveTrip';
+import type { RootStackParams } from '@navigation/types';
 import { useRouteDirections, LatLng } from '@hooks/useRouteDirections';
 import { RouteStop, Shift } from '@hooks/useDriverRoute';
 import { Colors, Radius, Spacing } from '@styles/tokens';
@@ -22,13 +25,10 @@ import TripCompleteCard from '@components/driver/activetrip/TripCompleteCard';
 
 // ─── Nav params ───────────────────────────────────────────────────────────────
 
-type ActiveTripParams = {
-  ActiveTrip: {
-    stops: RouteStop[];
-    shift: Shift;
-    communityId: string;
-  };
-};
+// Navigation types — RootStackParams is the source of truth
+type ActiveTripNavProp = NativeStackNavigationProp<RootStackParams, 'ActiveTrip'>;
+type ActiveTripRouteProp = RouteProp<RootStackParams, 'ActiveTrip'>;
+
 
 // ─── API key from app.json ────────────────────────────────────────────────────
 
@@ -70,8 +70,8 @@ function ErrorScreen({ message, onBack }: { message: string; onBack: () => void 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ActiveTripScreen() {
-  const navigation = useNavigation<any>();
-  const route      = useRoute<RouteProp<ActiveTripParams, 'ActiveTrip'>>();
+  const navigation = useNavigation<ActiveTripNavProp>();
+  const route = useRoute<ActiveTripRouteProp>();
   const { stops, shift, communityId } = route.params;
 
   const mapRef = useRef<MapView>(null);
