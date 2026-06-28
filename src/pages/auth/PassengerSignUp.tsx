@@ -15,16 +15,16 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParams } from '../../navigation/types';
 import { registerPassenger } from '../../services/authService';
+import {
+  isStrongPassword,
+  isValidEmail,
+  isValidMobile,
+  passwordStrengthMessage,
+} from '../../utils/validation';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParams, 'PassengerSignUp'>;
 };
-
-// Basic email format check
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Basic phone check: digits, spaces, +, -, ( ) allowed, 7-15 digits total
-const PHONE_REGEX = /^[0-9+\-\s()]{7,15}$/;
 
 export default function PassengerSignUp({ navigation }: Props) {
 
@@ -53,11 +53,12 @@ export default function PassengerSignUp({ navigation }: Props) {
       return 'Please enter your email address.';
     }
 
-    if (!EMAIL_REGEX.test(email.trim())) {
+    if (!isValidEmail(email)) {
       return 'Please enter a valid email address.';
     }
 
-    if (phone.trim() && !PHONE_REGEX.test(phone.trim())) {
+    // Phone is optional for passengers, so only validate it if provided.
+    if (phone.trim() && !isValidMobile(phone)) {
       return 'Please enter a valid phone number.';
     }
 
@@ -65,12 +66,8 @@ export default function PassengerSignUp({ navigation }: Props) {
       return 'Please enter a password.';
     }
 
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters.';
-    }
-
-    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-      return 'Password must include at least one uppercase letter and one number.';
+    if (!isStrongPassword(password)) {
+      return passwordStrengthMessage(password);
     }
 
     if (password !== confirmPassword) {
@@ -272,7 +269,7 @@ export default function PassengerSignUp({ navigation }: Props) {
             </View>
 
             <Text style={styles.hintText}>
-              At least 8 characters, with 1 uppercase letter and 1 number.
+              At least 8 characters, with 1 letter and 1 number.
             </Text>
 
           </View>
