@@ -5,8 +5,8 @@ import {
   KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParams }           from '../../navigation/types';
-import { loginUser, resetPassword }  from '../../services/authService';
+import { AuthStackParams } from '../../navigation/types';
+import { loginUser, resetPassword } from '../../services/authService';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParams, 'Login'>;
@@ -15,79 +15,122 @@ type Props = {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login({ navigation }: Props) {
-  const [email,    setEmail]    = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const showError = (title: string, message: string) => {
-    // Inline banner — works on web, iOS, and Android
     setErrorMsg(message);
-    // Native Alert — only actually renders on iOS/Android, harmless no-op on web
     Alert.alert(title, message);
   };
+const handleLogin = async () => {
+  setErrorMsg('');
 
-  const handleLogin = async () => {
-    setErrorMsg('');
+  const trimmedEmail = email.trim();
+  const trimmedPassword = password.trim();
 
-    const trimmedEmail = email.trim();
+  // Both empty
+  if (!trimmedEmail && !trimmedPassword) {
+    showError('Validation Error', 'Email & Password are required');
+    return;
+  }
 
-    if (!trimmedEmail || !password.trim()) {
-      showError('Missing fields', 'Please enter your email and password.');
-      return;
+  // Email empty
+  if (!trimmedEmail) {
+    showError('Validation Error', 'Email is required');
+    return;
+  }
+
+  // Password empty
+  if (!trimmedPassword) {
+    showError('Validation Error', 'Password is required');
+    return;
+  }
+
+  // Invalid email format
+  if (!EMAIL_REGEX.test(trimmedEmail)) {
+    showError('Validation Error', 'Please enter a valid email address');
+    return;
+  }
+
+  // Password length
+  if (trimmedPassword.length < 6) {
+    showError(
+      'Validation Error',
+      'Password must be at least 6 characters'
+    );
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    await loginUser(trimmedEmail, trimmedPassword);
+
+    // Optional success message
+    Alert.alert('Success', 'Successfully logged in.');
+
+  } catch (e: any) {
+    console.log(e.code);
+
+    switch (e.code) {
+      case 'auth/user-not-found':
+        showError('Login Failed', 'No account found with this email.');
+        break;
+
+      case 'auth/wrong-password':
+        showError('Login Failed', 'Incorrect password. Please try again.');
+        break;
+
+      case 'auth/invalid-credential':
+        showError(
+          'Login Failed',
+          'Incorrect email or password. Please try again.'
+        );
+        break;
+
+      case 'auth/invalid-email':
+        showError(
+          'Login Failed',
+          'Please enter a valid email address.'
+        );
+        break;
+
+      case 'auth/too-many-requests':
+        showError(
+          'Login Failed',
+          'Too many failed attempts. Please try again later.'
+        );
+        break;
+
+      case 'auth/network-request-failed':
+        showError(
+          'Login Failed',
+          'Network error. Check your connection.'
+        );
+        break;
+
+      default:
+        showError(
+          'Login Failed',
+          'Something went wrong. Please try again.'
+        );
     }
-
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
-      showError('Invalid email', 'Please enter a valid email address.');
-      return;
-    }
-
-    if (password.length < 6) {
-      showError('Invalid password', 'Password must be at least 6 characters.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await loginUser(trimmedEmail, password);
-      // ✅ No navigation.navigate() needed here
-      // loginUser() calls Firebase signInWithEmailAndPassword
-      // → onAuthStateChanged in App.tsx fires
-      // → fetches role from Firestore users/{uid}
-      // → sets AuthContext user
-      // → RootNavigator re-renders with DriverTabs or PassengerTabs automatically
-
-    } catch (e: any) {
-      console.log('🔥 Login error code:', e.code, '| message:', e.message);
-
-      const knownErrors: Record<string, string> = {
-        'auth/user-not-found':      'No account found with this email.',
-        'auth/wrong-password':      'Incorrect email or password. Please try again.',
-        'auth/invalid-credential':  'Incorrect email or password. Please try again.',
-        'auth/invalid-email':       'That email address looks invalid.',
-        'auth/too-many-requests':   'Too many failed attempts. Please try again later.',
-        'auth/network-request-failed': 'Network error. Check your connection and try again.',
-      };
-
-      const message = knownErrors[e.code] ?? e.message ?? 'Something went wrong. Please try again.';
-      showError('Login Failed', message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleForgot = async () => {
     const trimmedEmail = email.trim();
 
-    if (!trimmedEmail) {
-      showError('Enter email first', 'Type your email above, then tap Forgot Password.');
+    if (!trimmedEmail || !EMAIL_REGEX.test(trimmedEmail)) {
+      showError('Invalid Email', 'Please enter a valid email address.');
       return;
     }
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
-      showError('Invalid email', 'Please enter a valid email address.');
-      return;
-    }
+
     try {
       await resetPassword(trimmedEmail);
       setErrorMsg('');
@@ -118,7 +161,6 @@ export default function Login({ navigation }: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sign In</Text>
 
-          {/* INLINE ERROR BANNER — visible on web + native */}
           {errorMsg ? (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{errorMsg}</Text>
@@ -169,10 +211,11 @@ export default function Login({ navigation }: Props) {
             onPress={handleLogin}
             disabled={loading}
           >
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.primaryBtnText}>Sign In</Text>
-            }
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.primaryBtnText}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           {/* DIVIDER */}
@@ -200,6 +243,7 @@ export default function Login({ navigation }: Props) {
   );
 }
 
+/* STYLES (UNCHANGED) */
 const COLORS = {
   bg: '#0B1120', card: '#141E30', border: '#1E2D45',
   passenger: '#6C63FF', text: '#E2E8F0', muted: '#64748B', input: '#0F1927',
