@@ -12,21 +12,45 @@ type Props = {
   navigation: NativeStackNavigationProp<AuthStackParams, 'Login'>;
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Login({ navigation }: Props) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const showError = (title: string, message: string) => {
+    // Inline banner — works on web, iOS, and Android
+    setErrorMsg(message);
+    // Native Alert — only actually renders on iOS/Android, harmless no-op on web
+    Alert.alert(title, message);
+  };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing fields', 'Please enter your email and password.');
+    setErrorMsg('');
+
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password.trim()) {
+      showError('Missing fields', 'Please enter your email and password.');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      showError('Invalid email', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      showError('Invalid password', 'Password must be at least 6 characters.');
       return;
     }
 
     setLoading(true);
     try {
-      await loginUser(email.trim(), password);
+      await loginUser(trimmedEmail, password);
       // ✅ No navigation.navigate() needed here
       // loginUser() calls Firebase signInWithEmailAndPassword
       // → onAuthStateChanged in App.tsx fires
@@ -35,34 +59,42 @@ export default function Login({ navigation }: Props) {
       // → RootNavigator re-renders with DriverTabs or PassengerTabs automatically
 
     } catch (e: any) {
-      const knownErrors = [
-        'auth/user-not-found',
-        'auth/wrong-password',
-        'auth/invalid-credential',  // Firebase v9.14+
-        'auth/invalid-email',
-        'auth/too-many-requests',
-      ];
-      Alert.alert(
-        'Login Failed',
-        knownErrors.includes(e.code)
-          ? 'Incorrect email or password. Please try again.'
-          : e.message ?? 'Something went wrong. Please try again.',
-      );
+      console.log('🔥 Login error code:', e.code, '| message:', e.message);
+
+      const knownErrors: Record<string, string> = {
+        'auth/user-not-found':      'No account found with this email.',
+        'auth/wrong-password':      'Incorrect email or password. Please try again.',
+        'auth/invalid-credential':  'Incorrect email or password. Please try again.',
+        'auth/invalid-email':       'That email address looks invalid.',
+        'auth/too-many-requests':   'Too many failed attempts. Please try again later.',
+        'auth/network-request-failed': 'Network error. Check your connection and try again.',
+      };
+
+      const message = knownErrors[e.code] ?? e.message ?? 'Something went wrong. Please try again.';
+      showError('Login Failed', message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleForgot = async () => {
-    if (!email.trim()) {
-      Alert.alert('Enter email first', 'Type your email above, then tap Forgot Password.');
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      showError('Enter email first', 'Type your email above, then tap Forgot Password.');
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      showError('Invalid email', 'Please enter a valid email address.');
       return;
     }
     try {
-      await resetPassword(email.trim());
+      await resetPassword(trimmedEmail);
+      setErrorMsg('');
       Alert.alert('Email Sent', 'Check your inbox for a password reset link.');
-    } catch {
-      Alert.alert('Error', 'Could not send reset email. Please check the address.');
+    } catch (e: any) {
+      console.log('🔥 Reset password error:', e.code, e.message);
+      showError('Error', 'Could not send reset email. Please check the address.');
     }
   };
 
@@ -86,6 +118,13 @@ export default function Login({ navigation }: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sign In</Text>
 
+          {/* INLINE ERROR BANNER — visible on web + native */}
+          {errorMsg ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{errorMsg}</Text>
+            </View>
+          ) : null}
+
           {/* EMAIL */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Email Address</Text>
@@ -97,7 +136,7 @@ export default function Login({ navigation }: Props) {
               autoCapitalize="none"
               autoCorrect={false}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(t) => { setEmail(t); if (errorMsg) setErrorMsg(''); }}
             />
           </View>
 
@@ -111,7 +150,7 @@ export default function Login({ navigation }: Props) {
                 placeholderTextColor="#4A5568"
                 secureTextEntry={!showPass}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(t) => { setPassword(t); if (errorMsg) setErrorMsg(''); }}
               />
               <TouchableOpacity onPress={() => setShowPass(p => !p)} style={styles.eyeBtn}>
                 <Text style={styles.eyeIcon}>{showPass ? '🙈' : '👁️'}</Text>
@@ -164,6 +203,7 @@ export default function Login({ navigation }: Props) {
 const COLORS = {
   bg: '#0B1120', card: '#141E30', border: '#1E2D45',
   passenger: '#6C63FF', text: '#E2E8F0', muted: '#64748B', input: '#0F1927',
+  error: '#EF4444', errorBg: '#2A1418',
 };
 
 const styles = StyleSheet.create({
@@ -176,6 +216,8 @@ const styles = StyleSheet.create({
   tagline:          { color: COLORS.muted, marginTop: 4 },
   card:             { backgroundColor: COLORS.card, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: COLORS.border },
   cardTitle:        { color: COLORS.text, fontSize: 22, fontWeight: '800', marginBottom: 20 },
+  errorBox:         { backgroundColor: COLORS.errorBg, borderWidth: 1, borderColor: COLORS.error, borderRadius: 10, padding: 12, marginBottom: 16 },
+  errorText:        { color: COLORS.error, fontSize: 13, fontWeight: '600' },
   inputGroup:       { marginBottom: 16 },
   inputLabel:       { color: COLORS.muted, fontSize: 12, marginBottom: 6 },
   input:            { backgroundColor: COLORS.input, color: COLORS.text, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: COLORS.border },
