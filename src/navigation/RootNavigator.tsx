@@ -1,35 +1,39 @@
+import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../firebaseConfig';
 
-// Auth screens
-import Login         from '@pages/auth/Login';
-import PassengerSignUp       from '@pages/auth/PassengerSignUp';
-import DriverSignUpDetails   from '@pages/auth/DriverSignUpDetails';
-import DriverSignUpBus       from '@pages/auth/DriverSignUpBus';
+import Login               from '@pages/auth/Login';
+import RoleSelect          from '@pages/auth/RoleSelect';
+import PassengerSignUp     from '@pages/auth/PassengerSignUp';
+import DriverSignUpDetails from '@pages/auth/DriverSignUpDetails';
+import DriverSignUpBus     from '@pages/auth/DriverSignUpBus';
 
-// Tab navigators
 import DriverTabs    from '@navigation/DriverTabs';
 import PassengerTabs from '@navigation/PassengerTabs';
+import ActiveTrip    from '@pages/driver/ActiveTrip';
 
-// Full screen (above tabs — hides bottom nav)
-import ActiveTrip from '@pages/driver/ActiveTrip';
+import type {
+  AuthStackParams,
+  RootStackParams,
+  PassengerRootParams,
+} from '@navigation/types';
+import type { UserRole } from '../types/auth';
 
-import type { AuthStackParams, RootStackParams } from '@navigation/types';
-
-
-const Auth = createNativeStackNavigator<AuthStackParams>();
-const Root = createNativeStackNavigator<RootStackParams>();
-
-// ─── Temporary: hardcode role to test layout ──────────────────────────────────
-// Replace this with useAuth() from Firebase once auth is wired up.
-// Change to 'passenger' to test passenger tabs. null for login page
-const MOCK_ROLE: 'driver' | 'passenger' | null = 'passenger';
-const MOCK_LOADING = false;
+const Auth          = createNativeStackNavigator<AuthStackParams>();
+const DriverRoot    = createNativeStackNavigator<RootStackParams>();
+const PassengerRoot = createNativeStackNavigator<PassengerRootParams>();
 
 function AuthNavigator() {
   return (
-    <Auth.Navigator screenOptions={{ headerShown: false }}>
+    <Auth.Navigator
+      initialRouteName="Login"
+      screenOptions={{ headerShown: false }}
+    >
       <Auth.Screen name="Login"               component={Login} />
+      <Auth.Screen name="RoleSelect"          component={RoleSelect} />
       <Auth.Screen name="PassengerSignUp"     component={PassengerSignUp} />
       <Auth.Screen name="DriverSignUpDetails" component={DriverSignUpDetails} />
       <Auth.Screen name="DriverSignUpBus"     component={DriverSignUpBus} />
@@ -39,29 +43,57 @@ function AuthNavigator() {
 
 function DriverNavigator() {
   return (
-    <Root.Navigator screenOptions={{ headerShown: false }}>
-      <Root.Screen name="DriverTabs" component={DriverTabs} />
-      <Root.Screen
+    <DriverRoot.Navigator screenOptions={{ headerShown: false }}>
+      <DriverRoot.Screen name="DriverTabs" component={DriverTabs} />
+      <DriverRoot.Screen
         name="ActiveTrip"
         component={ActiveTrip}
         options={{ animation: 'slide_from_bottom' }}
       />
-    </Root.Navigator>
+    </DriverRoot.Navigator>
+  );
+}
+
+function PassengerNavigator() {
+  return (
+    <PassengerRoot.Navigator screenOptions={{ headerShown: false }}>
+      <PassengerRoot.Screen name="PassengerTabs" component={PassengerTabs} />
+    </PassengerRoot.Navigator>
   );
 }
 
 export default function RootNavigator() {
-  if (MOCK_LOADING) {
+  const [role,    setRole]    = useState<UserRole | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setRole(null);
+        setLoading(false);
+        return;
+      }
+      try {
+        const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
+        setRole(snap.exists() ? (snap.data().role as UserRole) : null);
+      } catch {
+        setRole(null);
+      } finally {
+        setLoading(false);
+      }
+    });
+    return unsub;
+  }, []);
+
+  if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
         <ActivityIndicator size="large" color="#1D4ED8" />
       </View>
     );
   }
 
-  if (!MOCK_ROLE) return <AuthNavigator />;
-
-  return MOCK_ROLE === 'driver'
-    ? <DriverNavigator />
-    : <PassengerTabs />;
+  if (role === 'driver')    return <DriverNavigator />;
+  if (role === 'passenger') return <PassengerNavigator />;
+  return <AuthNavigator />;
 }
